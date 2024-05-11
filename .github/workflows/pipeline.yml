@@ -1,7 +1,9 @@
 name: pipe-lab
 
 on:
-  workflow_call:
+  push:
+    branches:
+      - main
 
 jobs:
   install-kubectl:
