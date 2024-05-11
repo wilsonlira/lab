@@ -22,6 +22,7 @@ jobs:
         id: test-configure-kubectl-oke-action
         with:
           cluster: ${{ secrets.OKE_CLUSTER_OCID }}
+          region: ${{ secrets.OCI_CLI_REGION }}
 
       - name: Run Kubectl
         run: kubectl get nodes -A
