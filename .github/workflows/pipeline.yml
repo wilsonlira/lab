@@ -47,6 +47,17 @@ jobs:
             echo "Unable to Authenticate with Private OKE Cluster"
             echo "---------------------------------------------------------------"
           fi
+
+      - name: Configure Kubectl for Oracle Container Engine for Kubernetes (OKE)
+        # You may pin to the exact commit or the version.
+        # uses: oracle-actions/configure-kubectl-oke@a6d8f9282001ae82efb0f6e640c66b2f3bd3f954
+        uses: oracle-actions/configure-kubectl-oke@v1.3.2
+        with:
+          # The OCID of the target OKE cluster
+          cluster: ${{ secrets.OKE_CLUSTER_OCID }} 
+          # Set to true to connect to a private Kubernetes API endpoint. Requires a self-hosted GitHub Runner.
+          # enablePrivateEndpoint: # optional, default is false
+          
           
       # - name: Configure Kubectl
       #   uses: oracle-actions/configure-kubectl-oke@v1.3.2
