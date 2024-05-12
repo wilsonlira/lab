@@ -6,64 +6,28 @@ on:
       - main
 
 jobs:
-  install-kubectl:
+  test-action-home-region:
     runs-on: ubuntu-latest
-    name: Install Kubectl for OKE
+    name: Test the action in the tenancy home region
     env:
       OCI_CLI_USER: ${{ secrets.OCI_CLI_USER }}
       OCI_CLI_TENANCY: ${{ secrets.OCI_CLI_TENANCY }}
       OCI_CLI_FINGERPRINT: ${{ secrets.OCI_CLI_FINGERPRINT }}
       OCI_CLI_KEY_CONTENT: ${{ secrets.OCI_CLI_KEY_CONTENT }}
       OCI_CLI_REGION: ${{ secrets.OCI_CLI_REGION }}
-
     steps:
-      - name: Check OCI CLI installation
-        run: |  
-          if ! command -v oci &> /dev/null; then
-            echo "OCI CLI not found, installing..."
-            # Continue with the installation steps
-            curl -L -O https://raw.githubusercontent.com/oracle/oci-cli/master/scripts/install/install.sh
-            chmod +x install.sh
-            ./install.sh --accept-all-defaults
-            mv ~/bin/oci /usr/local/bin
-            oci --version 
-          else
-            echo "OCI CLI already installed"
-          fi
+      - uses: actions/checkout@v3
 
-      # - name: Configure OKE Cluster
-      #   run: |
-      #     oci ce cluster create-kubeconfig --cluster-id ${{ vars.OKE_CLUSTER_OCID }} --file $HOME/.kube/config --region ${{ secrets.OCI_CLI_REGION }} --token-version 2.0.0          
-      #     sed -i "s|${{ env.oke_private_ip }}|127.0.0.1|g" $HOME/.kube/config
-      #     sleep 5
-      #     kubectl cluster-info
-      #     if [ $? == 0 ]
-      #     then
-      #       echo "---------------------------------------------------------------"
-      #       echo "Successfully Connected to your Private OKE Cluster"
-      #       echo "---------------------------------------------------------------"
-      #     else
-      #       echo "---------------------------------------------------------------"
-      #       echo "Unable to Authenticate with Private OKE Cluster"
-      #       echo "---------------------------------------------------------------"
-      #     fi
-
-      - name: Configure Kubectl for Oracle Container Engine for Kubernetes (OKE)
-        # You may pin to the exact commit or the version.
-        # uses: oracle-actions/configure-kubectl-oke@a6d8f9282001ae82efb0f6e640c66b2f3bd3f954
-        uses: oracle-actions/configure-kubectl-oke@v1.3.2
+      - name: Configure Kubectl for OKE cluster in home region
+        uses: ./
+        id: test-configure-kubectl-oke-action
         with:
-          # The OCID of the target OKE cluster
-          cluster: ${{ secrets.OKE_CLUSTER_OCID }} 
-          # Set to true to connect to a private Kubernetes API endpoint. Requires a self-hosted GitHub Runner.
-          # enablePrivateEndpoint: # optional, default is false
-          
-          
-      # - name: Configure Kubectl
-      #   uses: oracle-actions/configure-kubectl-oke@v1.3.2
-      #   id: test-configure-kubectl-oke-action
-      #   with:
-      #     cluster: ${{ secrets.OKE_CLUSTER_OCID }}
+          cluster: ${{ secrets.OKE_CLUSTER_ID }}
 
-      - name: Run Kubectl
-        run: kubectl get nodes -A
+      - name: Check that the correct kubectl version is active
+        run: |
+          which kubectl
+          kubectl version --short
+
+      - name: Get pods using Kubectl
+        run: kubectl get pods -A
